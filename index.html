@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khatarnaak Webpage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --accent-color: #c5a059;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+        }
+
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Custom Cursor --- */
+        .cursor-outer, .cursor-inner {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+        }
+        .cursor-outer { width: 35px; height: 35px; border: 1px solid var(--accent-color); transition: transform 0.1s ease-out; }
+        .cursor-inner { width: 6px; height: 6px; background: var(--accent-color); box-shadow: 0 0 15px var(--accent-color); }
+
+        /* --- THE DYNAMIC SHAPE --- */
+        #dynamic-shape {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            z-index: 99;
+            pointer-events: none;
+            border: 2px solid var(--accent-color);
+            opacity: 0.2;
+            transition: width 0.6s cubic-bezier(0.23, 1, 0.32, 1), height 0.6s cubic-bezier(0.23, 1, 0.32, 1), border-radius 0.6s ease;
+            will-change: transform, width, height, top;
+            transform: translate(-50%, -50%);
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--accent-color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+            will-change: transform;
+        }
+
+        .parallax-wrapper {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+
+        .layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 125%;
+            background-size: cover;
+            background-position: center;
+            will-change: transform;
+        }
+        .layer-3 { background-image: url('3.png'); z-index: 1; background-color: #0a0a0a; }
+        .layer-2 { background-image: url('2.png'); z-index: 3; }
+        .layer-1 { background-image: url('1.png'); z-index: 4; }
+
+        .parallax-text {
+            position: relative;
+            z-index: 2;
+            font-family: 'Playfair Display', serif;
+            font-size: 8vw;
+            color: var(--accent-color);
+            text-align: center;
+        }
+
+        #subtitle {
+            position: relative;
+            z-index: 3;
+            color: var(--text-dim);
+            text-align: center;
+            letter-spacing: 8px;
+            font-size: 1rem;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .timeline-container {
+            position: relative;
+            z-index: 10;
+            padding: 150px 10%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* --- RESTORED ORIGINAL TIMELINE CSS --- */
+        .timeline-item {
+            margin-bottom: 150px;
+            padding: 40px;
+            border-left: 1px solid rgba(197, 160, 89, 0.2);
+            opacity: 0;
+            transform: translateX(-100px);
+            transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform, opacity;
+        }
+
+        .timeline-item h2 { font-family: 'Playfair Display', serif; font-size: 2.8rem; color: var(--accent-color); margin-bottom: 20px; }
+        .timeline-item p { color: var(--text-dim); line-height: 1.8; font-size: 1.1rem; font-style: italic; }
+
+/* Footer aur bottom gap ko fix kiya gaya hai */
+footer {
+    position: relative;
+    text-align: center;
+    padding: 50px 0 2px 0; /* Top aur Bottom dono padding kam kar di gayi hai */
+    color: var(--accent-color);
+    letter-spacing: 10px;
+    font-size: 1.5rem;
+    z-index: 10;
+    font-family: 'Playfair Display', serif;
+}
+
+
+           .footer-line-anchor {
+            width: 200px;
+            height: 2px;
+            margin: 25px auto 0;
+            background: transparent;
+        }
+
+        #credit-text {
+            position: fixed;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            transition: bottom 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+            opacity: 0;
+        }
+
+        #credit-text.show { bottom: 30px; opacity: 1; }
+        #credit-text a { color: var(--accent-color); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="cursor-outer"></div>
+    <div class="cursor-inner"></div>
+    <div id="dynamic-shape"></div>
+
+    <section class="parallax-wrapper">
+        <div class="layer layer-3" id="l3"></div>
+        <div class="layer layer-2" id="l2"></div>
+        <h1 class="parallax-text" id="txt">Gursharan Sidhu</h1>
+        <p id="subtitle">Something about you just scroll down</p>
+        <div class="layer layer-1" id="l1"></div>
+    </section>
+
+    <section class="timeline-container">
+<div class="timeline-item"><h2>I</h2><p>You are amazing.</p></div>
+<div class="timeline-item"><h2>II</h2><p>You are kind.</p></div>
+<div class="timeline-item"><h2>III</h2><p>You are intelligent.</p></div>
+<div class="timeline-item"><h2>IV</h2><p>You are beautiful.</p></div>
+<div class="timeline-item"><h2>V</h2><p>You are brave.</p></div>
+<div class="timeline-item"><h2>VI</h2><p>You are honest.</p></div>
+<div class="timeline-item"><h2>VII</h2><p>You are caring.</p></div>
+<div class="timeline-item"><h2>VIII</h2><p>You are punjaban.</p></div>
+<div class="timeline-item"><h2>IX</h2><p>You are cute.</p></div>
+<div class="timeline-item"><h2>X</h2><p>You are baddie.</p></div>
+<div class="timeline-item"><h2>XI</h2><p>You are bauni.</p></div>
+<div class="timeline-item"><h2>XII</h2><p>You are funny.</p></div>
+<div class="timeline-item"><h2>XIII</h2><p>You are inspiring.</p></div>
+<div class="timeline-item"><h2>XIV</h2><p>You are lucky charm.</p></div>
+<div class="timeline-item"><h2>XV</h2><p>You are khatarnaak.</p></div>
+<div class="timeline-item"><h2>XVI</h2><p>You are loyal.</p></div>
+<div class="timeline-item"><h2>XVII</h2><p>You are sweet.</p></div>
+<div class="timeline-item"><h2>XVIII</h2><p>You are talented.</p></div>
+<div class="timeline-item"><h2>XIX</h2><p>You are confident.</p></div>
+<div class="timeline-item"><h2>XX</h2><p>You are positive.</p></div>
+<div class="timeline-item"><h2>XXI</h2><p>You are pretty.</p></div>
+<div class="timeline-item"><h2>XXII</h2><p>You are strong.</p></div>
+<div class="timeline-item"><h2>XXIII</h2><p>You are unique.</p></div>
+<div class="timeline-item"><h2>XXIV</h2><p>You are bright.</p></div>
+<div class="timeline-item"><h2>XXV</h2><p>You are graceful.</p></div>
+<div class="timeline-item"><h2>XXVI</h2><p>You are polite.</p></div>
+<div class="timeline-item"><h2>XXVII</h2><p>You are friendly.</p></div>
+<div class="timeline-item"><h2>XXVIII</h2><p>You are helpful.</p></div>
+<div class="timeline-item"><h2>XXIX</h2><p>You are reliable.</p></div>
+<div class="timeline-item"><h2>XXX</h2><p>You are cheerful.</p></div>
+<div class="timeline-item"><h2>XXXI</h2><p>You are respectful.</p></div>
+<div class="timeline-item"><h2>XXXII</h2><p>You are understanding.</p></div>
+<div class="timeline-item"><h2>XXXIII</h2><p>You are warm.</p></div>
+<div class="timeline-item"><h2>XXXIV</h2><p>You are hardworking.</p></div>
+<div class="timeline-item"><h2>XXXV</h2><p>You are patient.</p></div>
+<div class="timeline-item"><h2>XXXVI</h2><p>You are delightful.</p></div>
+<div class="timeline-item"><h2>XXXVII</h2><p>You are radiant.</p></div>
+<div class="timeline-item"><h2>XXXVIII</h2><p>You are admirable.</p></div>
+<div class="timeline-item"><h2>XXXIX</h2><p>You are compassionate.</p></div>
+<div class="timeline-item"><h2>XL</h2><p>You are fearless.</p></div>
+<div class="timeline-item"><h2>XLI</h2><p>You are smart.</p></div>
+<div class="timeline-item"><h2>XLII</h2><p>You are lovely.</p></div>
+<div class="timeline-item"><h2>XLIII</h2><p>You are motivating.</p></div>
+<div class="timeline-item"><h2>XLIV</h2><p>You are energetic.</p></div>
+<div class="timeline-item"><h2>XLV</h2><p>You are trustworthy.</p></div>
+<div class="timeline-item"><h2>XLVI</h2><p>You are precious.</p></div>
+<div class="timeline-item"><h2>XLVII</h2><p>You are wonderful.</p></div>
+<div class="timeline-item"><h2>XLVIII</h2><p>You are special.</p></div>
+<div class="timeline-item"><h2>XLIX</h2><p>You are unforgettable.</p></div>
+    </section>
+
+    <footer>
+        YOU ARE THE MASTERPIECE
+        <div class="footer-line-anchor"></div>
+    </footer>
+
+    <div id="credit-text">
+        Made By <a href="https://instagram.com/@rip.eexgs" id="dev-link">EpicEnchanter</a>
+    </div>
+
+    <script>
+        const shape = document.getElementById('dynamic-shape');
+        const cursorOuter = document.querySelector('.cursor-outer');
+        const cursorInner = document.querySelector('.cursor-inner');
+        const anchor = document.querySelector('.footer-line-anchor');
+        const creditText = document.getElementById('credit-text');
+        const devLink = document.getElementById('dev-link');
+
+        // Smooth Scroll Logic (Optimized for Speed)
+        let currentY = 0;
+        let targetY = 0;
+        const lerpFactor = 0.15; // Fast but smooth
+
+        document.addEventListener('mousemove', (e) => {
+            cursorInner.style.left = cursorOuter.style.left = `${e.clientX}px`;
+            cursorInner.style.top = cursorOuter.style.top = `${e.clientY}px`;
+        });
+
+        function createParticles() {
+            const particleCount = 100;
+            const bodyHeight = document.body.scrollHeight;
+            for (let i = 0; i < particleCount; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 3 + 1;
+                p.style.width = p.style.height = `${size}px`;
+                p.style.left = `${Math.random() * 100}vw`;
+                p.style.top = `${Math.random() * bodyHeight}px`;
+                p.dataset.speed = Math.random() * 0.08 + 0.03;
+                document.body.appendChild(p);
+            }
+        }
+        window.addEventListener('load', createParticles);
+
+        function update() {
+            currentY += (targetY - currentY) * lerpFactor;
+            
+            let docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            let scrollFraction = currentY / docHeight;
+
+            // Shape Logic
+            if (scrollFraction < 0.88) {
+                let rotation = currentY * 0.3;
+                let scale = 1 + (scrollFraction * 1.5);
+                shape.style.width = "200px";
+                shape.style.height = "200px";
+                shape.style.borderRadius = `${Math.min(scrollFraction * 100, 50)}%`;
+                shape.style.top = "50%";
+                shape.style.transform = `translate3d(-50%, -50%, 0) rotate(${rotation}deg) scale(${scale})`;
+                shape.style.opacity = 0.2;
+            } else {
+                const rect = anchor.getBoundingClientRect();
+                shape.style.width = "400px";
+                shape.style.height = "2px";
+                shape.style.borderRadius = "0px";
+                shape.style.opacity = "1";
+                shape.style.transform = `translate3d(-50%, -50%, 0) rotate(0deg)`;
+                shape.style.top = `${rect.top}px`;
+            }
+
+            // Parallax (Fast & Responsive)
+            if (currentY < window.innerHeight * 1.2) {
+                document.getElementById('l3').style.transform = `translate3d(0, ${currentY * 0.4}px, 0)`;
+                document.getElementById('l2').style.transform = `translate3d(0, ${currentY * 0.25}px, 0)`;
+                document.getElementById('txt').style.transform = `translate3d(0, ${currentY * 0.35}px, 0)`;
+                document.getElementById('subtitle').style.transform = `translate3d(0, ${currentY * 0.45}px, 0)`;
+                document.getElementById('l1').style.transform = `translate3d(0, ${currentY * 0.1}px, 0)`;
+            }
+
+            // Timeline original feel
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                const rect = item.getBoundingClientRect();
+                if (rect.top < window.innerHeight * 0.85) {
+                    item.style.opacity = "1";
+                    item.style.transform = "translateX(0)";
+                } else {
+                    item.style.opacity = "0";
+                    item.style.transform = "translateX(-100px)";
+                }
+            });
+
+            // Particles
+            document.querySelectorAll('.particle').forEach(p => {
+                p.style.transform = `translate3d(0, ${currentY * parseFloat(p.dataset.speed)}px, 0)`;
+            });
+
+            if (scrollFraction > 0.98) creditText.classList.add('show');
+            else creditText.classList.remove('show');
+
+            requestAnimationFrame(update);
+        }
+
+        window.addEventListener('scroll', () => { targetY = window.scrollY; });
+        requestAnimationFrame(update);
+
+        devLink.addEventListener('mouseover', () => { devLink.innerText = "Someone who sees you as their lucky charm.-Lallu"; });
+        devLink.addEventListener('mouseout', () => { devLink.innerText = "EpicEnchanter"; });
+        document.addEventListener('mousedown', () => cursorOuter.style.transform = 'translate(-50%, -50%) scale(0.8)');
+        document.addEventListener('mouseup', () => cursorOuter.style.transform = 'translate(-50%, -50%) scale(1)');
+    </script>
+</body>
+</html>
